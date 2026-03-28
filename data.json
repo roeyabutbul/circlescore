@@ -1,0 +1,78 @@
+{
+  "people": [
+    {
+      "id": "9afd2af2-cd27-4106-8822-9af26e9024d9",
+      "name": "Roey Abutbul",
+      "is_admin": false
+    },
+    {
+      "id": "8736c1be-e34a-4d33-b0ba-7fc9f3573fb3",
+      "name": "Guy Barda",
+      "is_admin": false
+    },
+    {
+      "id": "7bbdcf41-8451-42fa-b68b-8b5b4649a250",
+      "name": "Harel Ben Ishay",
+      "is_admin": false
+    },
+    {
+      "id": "5acca524-505e-4efe-9102-e4a77a1fa5dd",
+      "name": "Amit Peres",
+      "is_admin": false
+    },
+    {
+      "id": "0d26040a-43bb-4d3a-ba65-9b55772a8e3c",
+      "name": "Tomer Peres",
+      "is_admin": false
+    },
+    {
+      "id": "b2b91860-ec87-453c-87fa-caace462baa1",
+      "name": "Yuval Lachmish",
+      "is_admin": false
+    },
+    {
+      "id": "991bbe78-24e4-4e9a-856b-d2e4e3f53991",
+      "name": "Eylon Shmilovich",
+      "is_admin": false
+    },
+    {
+      "id": "834b4e64-b79a-44f4-9fe7-f5032fef3bca",
+      "name": "Nir Zilberman",
+      "is_admin": false
+    },
+    {
+      "id": "750f31a3-7fe3-4676-91a7-daf028ccf947",
+      "name": "Ido Teper",
+      "is_admin": false
+    },
+    {
+      "id": "69563d6c-d6c3-4e77-b9d3-e48ea93175fc",
+      "name": "Snir Azran",
+      "is_admin": false
+    },
+    {
+      "id": "3fc4ac2c-1aa2-4b05-a715-e8506dc39523",
+      "name": "Itay Hayun",
+      "is_admin": false
+    }
+  ],
+  "scores": {
+    "8736c1be-e34a-4d33-b0ba-7fc9f3573fb3__9afd2af2-cd27-4106-8822-9af26e9024d9": 9.5,
+    "7bbdcf41-8451-42fa-b68b-8b5b4649a250__9afd2af2-cd27-4106-8822-9af26e9024d9": 8.0,
+    "5acca524-505e-4efe-9102-e4a77a1fa5dd__9afd2af2-cd27-4106-8822-9af26e9024d9": 4.0,
+    "7bbdcf41-8451-42fa-b68b-8b5b4649a250__8736c1be-e34a-4d33-b0ba-7fc9f3573fb3": 10.0,
+    "5acca524-505e-4efe-9102-e4a77a1fa5dd__8736c1be-e34a-4d33-b0ba-7fc9f3573fb3": 8.0,
+    "3fc4ac2c-1aa2-4b05-a715-e8506dc39523__8736c1be-e34a-4d33-b0ba-7fc9f3573fb3": 10.0,
+    "0d26040a-43bb-4d3a-ba65-9b55772a8e3c__9afd2af2-cd27-4106-8822-9af26e9024d9": 7.0,
+    "9afd2af2-cd27-4106-8822-9af26e9024d9__b2b91860-ec87-453c-87fa-caace462baa1": 2.0,
+    "991bbe78-24e4-4e9a-856b-d2e4e3f53991__9afd2af2-cd27-4106-8822-9af26e9024d9": 7.0,
+    "834b4e64-b79a-44f4-9fe7-f5032fef3bca__9afd2af2-cd27-4106-8822-9af26e9024d9": 9.0,
+    "750f31a3-7fe3-4676-91a7-daf028ccf947__9afd2af2-cd27-4106-8822-9af26e9024d9": 4.0,
+    "69563d6c-d6c3-4e77-b9d3-e48ea93175fc__9afd2af2-cd27-4106-8822-9af26e9024d9": 5.0,
+    "3fc4ac2c-1aa2-4b05-a715-e8506dc39523__9afd2af2-cd27-4106-8822-9af26e9024d9": 6.0,
+    "5acca524-505e-4efe-9102-e4a77a1fa5dd__7bbdcf41-8451-42fa-b68b-8b5b4649a250": 7.0,
+    "0d26040a-43bb-4d3a-ba65-9b55772a8e3c__5acca524-505e-4efe-9102-e4a77a1fa5dd": 8.0,
+    "69563d6c-d6c3-4e77-b9d3-e48ea93175fc__8736c1be-e34a-4d33-b0ba-7fc9f3573fb3": 5.0
+  },
+  "meetings": []
+}
