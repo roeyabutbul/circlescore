@@ -35,14 +35,15 @@ def pair_key(a: str, b: str) -> str:
 
 def predict_score(person_ids: List[str], scores: dict) -> dict:
     """
-    Weighted mean: pairs far from neutral (5.5) carry more weight.
-    Strong chemistry or real friction matters more than middle-ground pairs.
+    Weighted mean blended with a bottleneck component (avg of the 2 worst pairs).
+    One bad pair hurts; two bad pairs hurt a lot more.
     """
     if len(person_ids) < 2:
         return {"score": None, "pairs": [], "missing_pairs": []}
 
     NEUTRAL = 5.5
     BASE_WEIGHT = 0.4   # floor so every pair still counts a little
+    BOTTLENECK_WEIGHT = 0.3  # how much the 2 worst pairs drag the final score
 
     pairs = []
     missing_pairs = []
@@ -61,10 +62,25 @@ def predict_score(person_ids: List[str], scores: dict) -> dict:
     if not pair_scores:
         return {"score": None, "pairs": [], "missing_pairs": []}
 
-    weights = [abs(s - NEUTRAL) + BASE_WEIGHT for s in pair_scores]
+    # In small groups a bad pair is harder to "escape" — amplify its weight.
+    # Factor: n=2 → 3.0x, n=3 → 2.0x, n=4 → 1.5x, n=5+ → 1.0x (no boost)
+    n = len(person_ids)
+    bad_pair_factor = max(1.0, 4.0 / (n - 1))
+
+    weights = []
+    for s in pair_scores:
+        dist = abs(s - NEUTRAL)
+        w = (dist + BASE_WEIGHT) * bad_pair_factor if s < NEUTRAL else dist + BASE_WEIGHT
+        weights.append(w)
+
     weighted_avg = sum(s * w for s, w in zip(pair_scores, weights)) / sum(weights)
 
-    score = round(max(1.0, min(10.0, weighted_avg)), 1)
+    # Bottleneck: average of the 2 worst pairs (or 1 if only 1 pair exists)
+    k = min(2, len(pair_scores))
+    bottom_avg = sum(sorted(pair_scores)[:k]) / k
+
+    blended = (1 - BOTTLENECK_WEIGHT) * weighted_avg + BOTTLENECK_WEIGHT * bottom_avg
+    score = round(max(1.0, min(10.0, blended)), 1)
     return {"score": score, "pairs": pairs, "missing_pairs": missing_pairs}
 
 
