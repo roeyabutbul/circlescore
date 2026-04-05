@@ -28,7 +28,7 @@ body {
 
 /* Layout */
 .app {
-  max-width: 760px;
+  max-width: 980px;
   margin: 0 auto;
   padding: 24px 16px 80px;
 }
@@ -471,7 +471,7 @@ body {
 .bubble-arena {
   position: relative;
   width: 100%;
-  height: 440px;
+  height: 580px;
   background: var(--bg);
   border-radius: var(--radius);
   overflow: hidden;
@@ -484,8 +484,8 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 96px;
-  height: 96px;
+  width: 124px;
+  height: 124px;
   border-radius: 50%;
   background: var(--surface);
   border: 2px solid var(--border);
@@ -499,13 +499,13 @@ body {
 }
 
 .arena-center .score-number {
-  font-size: 2rem;
+  font-size: 2.6rem;
   line-height: 1;
   margin-bottom: 2px;
 }
 
 .arena-center .score-label {
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   text-align: center;
   padding: 0 10px;
   line-height: 1.3;
@@ -604,7 +604,8 @@ body {
   cursor: pointer;
   user-select: none;
   z-index: 5;
-  width: 88px;
+  width: 116px;
+  transition: left 0.5s ease, top 0.5s ease;
 }
 
 .person-bubble:hover {
@@ -613,14 +614,14 @@ body {
 }
 
 .bubble-avatar {
-  width: 68px;
-  height: 68px;
+  width: 88px;
+  height: 88px;
   border-radius: 50%;
   background: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: #fff;
   flex-shrink: 0;
@@ -629,8 +630,8 @@ body {
 }
 
 .bubble-avatar-img {
-  width: 68px;
-  height: 68px;
+  width: 88px;
+  height: 88px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
@@ -644,10 +645,10 @@ body {
 }
 
 .bubble-name {
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   color: var(--text-dim);
   white-space: nowrap;
-  max-width: 80px;
+  max-width: 106px;
   overflow: hidden;
   text-overflow: ellipsis;
   text-align: center;

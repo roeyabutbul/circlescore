@@ -204,6 +204,10 @@ def predict(req: PredictRequest):
         raise HTTPException(status_code=400, detail="Select at least 2 people")
     data = load_data()
 
+    # Special rule: all people selected = perfect score
+    if len(req.person_ids) == len(data["people"]):
+        return {"score": 10.0, "pairs": [], "missing_pairs": [], "override": "all_in_rule"}
+
     # Special rule: Guy + Itay in a group larger than just the two of them = score 0
     if len(req.person_ids) > 2:
         selected_names = {

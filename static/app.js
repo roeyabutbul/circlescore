@@ -8,54 +8,61 @@ let scoringPersonId = null;
 // ---- Bubble animation ----
 let bubbleState = [];   // { id, home: {x,y} }
 let animFrameId = null;
-const BUBBLE_R = 44;
+const BUBBLE_R = 58;
 const FLOAT_VARIANTS = 6;
 
-function computeNewHomes(count, existingHomes, W, H) {
+function computeAllHomes(count, W, H) {
   if (count === 0) return [];
+
   const cx = W / 2, cy = H / 2;
-  const PAD = BUBBLE_R + 10;
-  const CENTER_MIN = 105;
-  const CELL = 150;
-  const usableW = W - PAD * 2;
-  const usableH = H - PAD * 2;
-  const cols = Math.max(1, Math.floor(usableW / CELL));
-  const rows = Math.max(1, Math.floor(usableH / CELL));
-  const cellW = usableW / cols;
-  const cellH = usableH / rows;
+  const CENTER_R = 62;
+  const AVATAR_R = 44;
+  const EDGE_PAD = AVATAR_R + 14;
 
-  // Build all valid grid cell centers (clear of center circle + existing homes)
-  const cells = [];
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const x = PAD + (c + 0.5) * cellW;
-      const y = PAD + (r + 0.5) * cellH;
-      if (Math.hypot(x - cx, y - cy) >= CENTER_MIN &&
-          existingHomes.every(h => Math.hypot(x - h.x, y - h.y) >= CELL))
-        cells.push({ x, y });
+  // --- Middle section: 2 spots on each side of center circle ---
+  const gap = 22;
+  const near = CENTER_R + AVATAR_R + gap;
+  const far  = near + AVATAR_R * 2 + gap;
+  const middleSlots = [
+    { x: cx - far,  y: cy },
+    { x: cx - near, y: cy },
+    { x: cx + near, y: cy },
+    { x: cx + far,  y: cy },
+  ];
+
+  const positions = [];
+
+  // Fill middle slots first (up to 4)
+  const middleCount = Math.min(count, 4);
+  for (let i = 0; i < middleCount; i++) positions.push(middleSlots[i]);
+
+  const remaining = count - middleCount;
+  if (remaining === 0) return positions;
+
+  // --- Top and bottom sections ---
+  const sectionH = H / 3;
+  const topY    = { min: EDGE_PAD,              max: sectionH - AVATAR_R };
+  const bottomY = { min: H - sectionH + AVATAR_R, max: H - EDGE_PAD };
+
+  const topCount    = Math.ceil(remaining / 2);
+  const bottomCount = remaining - topCount;
+
+  function gridPositions(n, yMin, yMax) {
+    if (n === 0) return [];
+    const pts = [];
+    const cellW = (W - EDGE_PAD * 2) / n;
+    const y = (yMin + yMax) / 2;
+    for (let i = 0; i < n; i++) {
+      pts.push({ x: EDGE_PAD + (i + 0.5) * cellW, y });
     }
+    return pts;
   }
 
-  // Shuffle so assignment is random, not top-left first
-  for (let i = cells.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [cells[i], cells[j]] = [cells[j], cells[i]];
-  }
-
-  const result = cells.slice(0, count);
-
-  // Fallback for any overflow (large groups): brute-force with relaxed spacing
-  let tries = 0;
-  while (result.length < count && tries++ < 500) {
-    const x = PAD + Math.random() * usableW;
-    const y = PAD + Math.random() * usableH;
-    const allTaken = [...existingHomes, ...result];
-    if (Math.hypot(x - cx, y - cy) >= CENTER_MIN &&
-        allTaken.every(p => Math.hypot(x - p.x, y - p.y) >= CELL * 0.75))
-      result.push({ x, y });
-  }
-
-  return result;
+  return [
+    ...positions,
+    ...gridPositions(topCount, topY.min, topY.max),
+    ...gridPositions(bottomCount, bottomY.min, bottomY.max),
+  ];
 }
 
 function startBubbleArena() {
@@ -67,26 +74,30 @@ function startBubbleArena() {
   // Drop state for removed people
   bubbleState = bubbleState.filter(b => people.find(p => p.id === b.id));
 
-  // Compute homes for all new people at once (batch avoids cascading failures)
-  const newPeople = people.filter(p => !bubbleState.find(b => b.id === p.id));
-  if (newPeople.length > 0) {
-    const existingHomes = bubbleState.map(b => b.home);
-    const newHomes = computeNewHomes(newPeople.length, existingHomes, W, H);
-    newPeople.forEach((p, i) => {
-      const home = newHomes[i];
-      if (!home) return;
-      bubbleState.push({ id: p.id, home });
-      const el = document.getElementById(`bubble-${p.id}`);
-      if (el) {
-        el.style.left = (home.x - BUBBLE_R) + "px";
-        el.style.top  = (home.y - BUBBLE_R) + "px";
+  // Recompute all homes so every bubble fits in the frame
+  const homes = computeAllHomes(people.length, W, H);
+
+  people.forEach((p, i) => {
+    const home = homes[i];
+    if (!home) return;
+
+    let state = bubbleState.find(b => b.id === p.id);
+    if (!state) { state = { id: p.id, home }; bubbleState.push(state); }
+    else state.home = home;
+
+    const el = document.getElementById(`bubble-${p.id}`);
+    if (el) {
+      el.style.left = (home.x - BUBBLE_R) + "px";
+      el.style.top  = (home.y - BUBBLE_R) + "px";
+      if (!el.dataset.animated) {
         const v = Math.floor(Math.random() * FLOAT_VARIANTS);
         const dur = (10 + Math.random() * 7).toFixed(1);
         const delay = (-Math.random() * 10).toFixed(1);
         el.style.animation = `bubble-float-${v} ${dur}s ${delay}s ease-in-out infinite`;
+        el.dataset.animated = "1";
       }
-    });
-  }
+    }
+  });
 
   if (animFrameId) cancelAnimationFrame(animFrameId);
   animFrameId = requestAnimationFrame(tickLines);
@@ -265,6 +276,8 @@ function updateScoreDisplay(score, pairs, missing, override) {
   if (centerEl) centerEl.className = "arena-center score-" + scoreClass(score);
   labelEl.textContent = override === "guy_itay_rule"
     ? "Guy and Itay together? Not happening."
+    : override === "all_in_rule"
+    ? "The whole crew — it's going to be legendary!"
     : scoreLabel(score);
 
   // Breakdown chips
