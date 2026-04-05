@@ -35,53 +35,62 @@ def pair_key(a: str, b: str) -> str:
 
 def predict_score(person_ids: List[str], scores: dict) -> dict:
     """
-    Weighted mean blended with a bottleneck component (avg of the 2 worst pairs).
-    One bad pair hurts; two bad pairs hurt a lot more.
+    Hierarchical subgroup scoring (bottom-up).
+
+    A group of size n is scored from all its (n-1) subgroups, not directly
+    from pairs. This means a strong triplet inside a quartet carries real
+    weight instead of being diluted by individual bad pairs.
+
+    Base case (pairs): use stored score or 5.0 if missing.
+    Recursive case: weighted avg + bottleneck on sub-scores, same as before.
     """
     if len(person_ids) < 2:
         return {"score": None, "pairs": [], "missing_pairs": []}
 
-    NEUTRAL = 5.5
-    BASE_WEIGHT = 0.4   # floor so every pair still counts a little
-    BOTTLENECK_WEIGHT = 0.3  # how much the 2 worst pairs drag the final score
+    memo = {}
 
+    def score_group(group: tuple) -> float:
+        if group in memo:
+            return memo[group]
+
+        if len(group) == 2:
+            key = pair_key(group[0], group[1])
+            result = scores.get(key, 5.0)
+            memo[group] = result
+            return result
+
+        # Score every (n-1) subgroup
+        n = len(group)
+        sub_scores = [
+            score_group(tuple(group[j] for j in range(n) if j != i))
+            for i in range(n)
+        ]
+
+        # At group level: avg + best subgroup (ceiling) + worst subgroup (soft floor)
+        # Strong core subgroup lifts the score; worst subgroup is a gentle drag.
+        avg = sum(sub_scores) / len(sub_scores)
+        best = max(sub_scores)
+        worst = min(sub_scores)
+
+        blended = 0.4 * avg + 0.4 * best + 0.2 * worst
+        result = max(1.0, min(10.0, blended))
+        memo[group] = result
+        return result
+
+    # Collect pair info for the response
     pairs = []
     missing_pairs = []
-    pair_scores = []
-
     for i in range(len(person_ids)):
         for j in range(i + 1, len(person_ids)):
             key = pair_key(person_ids[i], person_ids[j])
             if key in scores:
                 pairs.append({"key": key, "score": scores[key]})
-                pair_scores.append(scores[key])
             else:
                 missing_pairs.append(key)
-                pair_scores.append(5.0)
 
-    if not pair_scores:
-        return {"score": None, "pairs": [], "missing_pairs": []}
-
-    # In small groups a bad pair is harder to "escape" — amplify its weight.
-    # Factor: n=2 → 3.0x, n=3 → 2.0x, n=4 → 1.5x, n=5+ → 1.0x (no boost)
-    n = len(person_ids)
-    bad_pair_factor = max(1.0, 4.0 / (n - 1))
-
-    weights = []
-    for s in pair_scores:
-        dist = abs(s - NEUTRAL)
-        w = (dist + BASE_WEIGHT) * bad_pair_factor if s < NEUTRAL else dist + BASE_WEIGHT
-        weights.append(w)
-
-    weighted_avg = sum(s * w for s, w in zip(pair_scores, weights)) / sum(weights)
-
-    # Bottleneck: average of the 2 worst pairs (or 1 if only 1 pair exists)
-    k = min(2, len(pair_scores))
-    bottom_avg = sum(sorted(pair_scores)[:k]) / k
-
-    blended = (1 - BOTTLENECK_WEIGHT) * weighted_avg + BOTTLENECK_WEIGHT * bottom_avg
-    score = round(max(1.0, min(10.0, blended)), 1)
-    return {"score": score, "pairs": pairs, "missing_pairs": missing_pairs}
+    group = tuple(sorted(person_ids))
+    final_score = round(score_group(group), 1)
+    return {"score": final_score, "pairs": pairs, "missing_pairs": missing_pairs}
 
 
 # --- Models ---
